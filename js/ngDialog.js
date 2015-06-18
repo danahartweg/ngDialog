@@ -29,6 +29,7 @@
     var disabledAnimationClass = 'ngdialog-disabled-animation';
     var forceBodyReload = false;
     var scopes = {};
+    var options = {};
     var openIdStack = [];
     var keydownIsBound = false;
 
@@ -394,6 +395,89 @@
 
                             return generatedId;
                         }
+                    },
+
+                    setOptions: function(dialogID, opts) {
+                        options[dialogID] = opts;
+                    },
+
+                    getOptions: function(dialogID) {
+                        return options[dialogID];
+                    },
+
+                    replacePane: function(templateToLoad) {
+                        var $dialog = privateMethods.getActiveDialog();
+                        var dialogChildren = $dialog.children();
+                        var $dialogContent = null;
+
+                        // find the ngDialog content
+                        for (var i = 0, length = dialogChildren.length; i < length; i++) {
+                            if ($el(dialogChildren[i]).hasClass('ngdialog-content')) {
+                                $dialogContent = $el(dialogChildren[i]);
+                                break;
+                            }
+                        }
+
+                        // load the new template html
+                        var dialogID = 'ngdialog1';
+                        var options = privateMethods.getOptions(dialogID);
+                        var scope = scopes[dialogID];
+                        var defer = defers[dialogID];
+
+                        var resolve = angular.extend({}, options.resolve);
+
+                        angular.forEach(resolve, function (value, key) {
+                            resolve[key] = angular.isString(value) ? $injector.get(value) : $injector.invoke(value, null, null, key);
+                        });
+
+                        $q.all({
+                            template: privateMethods.loadTemplate(templateToLoad, options.plain, options.cache),
+                            locals: $q.all(resolve)
+                        }).then(function (setup) {
+                            var template = setup.template;
+
+                            if (options.showClose) {
+                                template += '<div class="ngdialog-close"></div>';
+                            }
+
+                            $dialogContent.empty();
+                            $dialogContent.append(template);
+
+                            privateMethods.applyAriaAttributes($dialog, options);
+
+                            // make sure the new pane is compiled after it is loaded
+                            $timeout(function () {
+                                $compile($dialog)(scope);
+                            });
+                        });
+
+                        // remove the existing content
+
+                        // change the size of the dialog
+
+                        // insert the new html template
+                    },
+
+                    loadTemplateUrl: function (tmpl, config) {
+                        return $http.get(tmpl, (config || {})).then(function(res) {
+                            return res.data || '';
+                        });
+                    },
+
+                    loadTemplate: function (tmpl, plain, cache) {
+                        if (!tmpl) {
+                            return 'Empty template';
+                        }
+
+                        if (angular.isString(tmpl) && plain) {
+                            return tmpl;
+                        }
+
+                        if (typeof cache === 'boolean' && !cache) {
+                            return privateMethods.loadTemplateUrl(tmpl, {cache: false});
+                        }
+
+                        return privateMethods.loadTemplateUrl(tmpl, {cache: $templateCache});
                     }
                 };
 
@@ -402,6 +486,7 @@
                     /*
                      * @param {Object} options:
                      * - template {String} - id of ng-template, url for partial, plain string (if enabled)
+                     * - panes {Object} - additional templates to be transitioned to
                      * - plain {Boolean} - enable plain string templates, default false
                      * - scope {Object}
                      * - controller {String}
@@ -424,6 +509,8 @@
                         opts = opts || {};
                         angular.extend(options, opts);
 
+                        privateMethods.setOptions(dialogID, options);
+
                         var defer;
                         defers[dialogID] = defer = $q.defer();
 
@@ -439,7 +526,7 @@
                         });
 
                         $q.all({
-                            template: loadTemplate(options.template || options.templateUrl),
+                            template: privateMethods.loadTemplate(options.template || options.templateUrl, options.plain, options.cache),
                             locals: $q.all(resolve)
                         }).then(function (setup) {
                             var template = setup.template,
@@ -522,6 +609,19 @@
                                 privateMethods.closeDialog($dialog, value);
                             };
 
+                            // inject pane navigation into the scope
+                            scope.loadPane = function (paneId) {
+                                var paneTemplate = '';
+
+                                if (paneId === 'main') {
+                                    paneTemplate = options.template;
+                                } else {
+                                    paneTemplate = options.panes[paneId];
+                                }
+
+                                privateMethods.replacePane(paneTemplate);
+                            };
+
                             $timeout(function () {
                                 var $activeDialogs = document.querySelectorAll('.ngdialog');
                                 privateMethods.deactivateAll($activeDialogs);
@@ -591,28 +691,6 @@
                                 privateMethods.closeDialog($dialog, value);
                             }
                         };
-
-                        function loadTemplateUrl (tmpl, config) {
-                            return $http.get(tmpl, (config || {})).then(function(res) {
-                                return res.data || '';
-                            });
-                        }
-
-                        function loadTemplate (tmpl) {
-                            if (!tmpl) {
-                                return 'Empty template';
-                            }
-
-                            if (angular.isString(tmpl) && options.plain) {
-                                return tmpl;
-                            }
-
-                            if (typeof options.cache === 'boolean' && !options.cache) {
-                                return loadTemplateUrl(tmpl, {cache: false});
-                            }
-
-                            return loadTemplateUrl(tmpl, {cache: $templateCache});
-                        }
                     },
 
                     /*
