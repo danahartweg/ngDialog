@@ -436,26 +436,69 @@
                         }).then(function (setup) {
                             var template = setup.template;
 
+                            // add the close button to the new template
                             if (options.showClose) {
                                 template += '<div class="ngdialog-close"></div>';
                             }
 
-                            $dialogContent.empty();
-                            $dialogContent.append(template);
+                            // temporary holder for transition timeout
+                            var transitionTimer = 0;
 
-                            privateMethods.applyAriaAttributes($dialog, options);
+                            // create a temporary element to find the new size
+                            var tempContent = $dialogContent.clone();
+                            tempContent.css('visibility', 'hidden');
+                            tempContent.css('height', '');
+                            tempContent.empty()
+                            tempContent.append(template);
+
+                            $dialog.append(tempContent);
+                            var newHeight = tempContent[0].clientHeight;
+
+                            tempContent.remove();
+                            tempContent = null;
+
+                            // find and assign the current height so the transition
+                            // can take over smoothly
+                            var currentHeight = $dialogContent[0].clientHeight;
+                            $dialogContent.css('height', currentHeight + 'px');
+                            transitionTimer += 500;
+
+                            // debugger;
+
+                            // fade out the current content
+                            $timeout(function() {
+                                $dialogContent.children().css('opacity', 0);
+                            }, transitionTimer);
+                            transitionTimer += 500;
+
+                            // change the height of the dialog after the content is gone
+                            $timeout(function() {
+                                $dialogContent.empty();
+
+                                // make sure the new content is added and is invisible
+                                $dialogContent.append(template);
+                                $dialogContent.children().css('opacity', 0);
+                            }, transitionTimer);
+                            transitionTimer += 500;
+
+                            // change the height of the dialog after the content is gone
+                            $timeout(function() {
+                                $dialogContent.css('height', newHeight + 'px');
+                            }, transitionTimer);
+                            transitionTimer += 500;
+
+                            // add the new content and fade it in
+                            $timeout(function() {
+                                $dialogContent.children().css('opacity', 1);
+                            }, transitionTimer);
+                            transitionTimer += 500;
 
                             // make sure the new pane is compiled after it is loaded
                             $timeout(function () {
+                                privateMethods.applyAriaAttributes($dialog, options);
                                 $compile($dialog)(scope);
-                            });
+                            }, transitionTimer);
                         });
-
-                        // remove the existing content
-
-                        // change the size of the dialog
-
-                        // insert the new html template
                     },
 
                     loadTemplateUrl: function (tmpl, config) {
