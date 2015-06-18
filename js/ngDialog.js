@@ -419,7 +419,7 @@
                         }
 
                         // load the new template html
-                        var dialogID = 'ngdialog1';
+                        var dialogID = $dialog.attr('id');
                         var options = privateMethods.getOptions(dialogID);
                         var scope = scopes[dialogID];
                         var defer = defers[dialogID];
@@ -443,6 +443,9 @@
 
                             // temporary holder for transition timeout
                             var transitionTimer = 0;
+                            var transitionWait  = 25;
+                            var opacityDuration = 250;
+                            var heightDuration = 400;
 
                             // create a temporary element to find the new size
                             var tempContent = $dialogContent.clone();
@@ -461,15 +464,12 @@
                             // can take over smoothly
                             var currentHeight = $dialogContent[0].clientHeight;
                             $dialogContent.css('height', currentHeight + 'px');
-                            transitionTimer += 500;
-
-                            // debugger;
 
                             // fade out the current content
                             $timeout(function() {
                                 $dialogContent.children().css('opacity', 0);
                             }, transitionTimer);
-                            transitionTimer += 500;
+                            transitionTimer += opacityDuration + transitionWait;
 
                             // change the height of the dialog after the content is gone
                             $timeout(function() {
@@ -479,19 +479,19 @@
                                 $dialogContent.append(template);
                                 $dialogContent.children().css('opacity', 0);
                             }, transitionTimer);
-                            transitionTimer += 500;
+                            transitionTimer += opacityDuration + transitionWait;
 
                             // change the height of the dialog after the content is gone
                             $timeout(function() {
                                 $dialogContent.css('height', newHeight + 'px');
                             }, transitionTimer);
-                            transitionTimer += 500;
+                            transitionTimer += heightDuration + transitionWait;
 
                             // add the new content and fade it in
                             $timeout(function() {
                                 $dialogContent.children().css('opacity', 1);
                             }, transitionTimer);
-                            transitionTimer += 500;
+                            transitionTimer += opacityDuration + transitionWait;
 
                             // make sure the new pane is compiled after it is loaded
                             $timeout(function () {
