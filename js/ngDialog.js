@@ -662,6 +662,10 @@
                                     paneTemplate = options.panes[paneId];
                                 }
 
+                                if (!paneTemplate) {
+                                    return;
+                                }
+
                                 privateMethods.replacePane(paneTemplate);
                             };
 
