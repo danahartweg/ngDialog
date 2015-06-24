@@ -487,16 +487,17 @@
                             }, transitionTimer);
                             transitionTimer += heightDuration + transitionWait;
 
-                            // add the new content and fade it in
-                            $timeout(function() {
-                                $dialogContent.children().css('opacity', 1);
-                            }, transitionTimer);
-                            transitionTimer += opacityDuration + transitionWait;
-
                             // make sure the new pane is compiled after it is loaded
+                            // and before it is visible to prevent popping
                             $timeout(function () {
                                 privateMethods.applyAriaAttributes($dialog, options);
                                 $compile($dialog)(scope);
+                            }, transitionTimer);
+                            transitionTimer += opacityDuration + transitionWait;
+
+                            // add the new content and fade it in
+                            $timeout(function() {
+                                $dialogContent.children().css('opacity', 1);
                             }, transitionTimer);
                         });
                     },
