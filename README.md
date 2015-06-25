@@ -70,16 +70,29 @@ ngDialog.open({ template: 'templateId' });
 
 Also it is possible to use simple string as template together with ``plain`` option.
 
-##### ``plain {Boolean}``
+##### ``panes {Object}``
 
-If ``true`` allows to use plain string as template, default ``false``:
+Dialog panes can be loaded via the same sources as the ``template`` option. The template will always load in as the first pane. Subsequent panes should be set with their key as the pane identifier:
 
 ```javascript
-ngDialog.open({
-    template: '<p>my template</p>',
-    plain: true
-});
+$scope.clickToOpen = function () {
+    ngDialog.open({
+        template: 'popupTmpl.html',
+        panes   : {
+            'paneTwo'  : 'paneTwo.html',
+            'paneThree': 'paneThree.html'
+        }
+    });
+};
 ```
+
+An additional method is injected into the passed ``$scope`` to allow switching between panes via the pane identifier:
+
+```html
+$scope.loadPane('paneIdentifier');
+```
+
+The initial template can be loaded with the pane identifier of ``main``.
 
 ##### ``controller {String} | {Array} | {Object}``
 
