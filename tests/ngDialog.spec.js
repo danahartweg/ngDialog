@@ -145,18 +145,28 @@ describe('ngDialog', function () {
       scope.loadPane('pane02');
 
       $httpBackend.flush();
-      $timeout.flush();
-
-      expect(elm.textContent).toEqual('pane: 2');
+      $timeout(function() {
+        expect(elm.textContent).toEqual('pane: 2');
+      });
     }));
 
     it('should transition to the third pane', inject(function ($httpBackend, $timeout) {
       scope.loadPane('pane03');
 
       $httpBackend.flush();
-      $timeout.flush();
+      $timeout(function() {
+        expect(elm.textContent).toEqual('pane: 3');
+      })
+    }));
 
-      expect(elm.textContent).toEqual('pane: 3');
+    it('should transition back to the main pane', inject(function ($httpBackend, $timeout) {
+      scope.loadPane('pane03');
+      scope.loadPane('main');
+
+      $httpBackend.flush();
+      $timeout(function() {
+        expect(elm.textContent).toEqual('main template: 1');
+      })
     }));
   });
 

@@ -455,65 +455,73 @@
                             tempContent.append(template);
 
                             $dialog.append(tempContent);
-                            var newHeight = tempContent[0].clientHeight;
 
-                            tempContent.remove();
-                            tempContent = null;
+                            // trigger a compile on the new template, so we can
+                            // retrieve the actual height
+                            $compile($dialog)(scope);
 
-                            // find the current height so we can allow smooth transitions
-                            var currentHeight = $dialogContent[0].clientHeight;
-
-                            // disable the current transition properties so the height
-                            // change doesn't transition from 0 to current
-                            $dialogContent.css('transition', 'none');
-                            $dialogContent.css('-webkit-transition', 'none');
-                            $dialogContent.css('-moz-transition', 'none');
-                            $dialogContent.css('-o-transition', 'none');
-
-                            // assign the new height, then trigger a reflow to flush changes
-                            $dialogContent.css('height', currentHeight + 'px');
-                            $dialogContent[0].offsetHeight;
-
-                            // restore the transitions to the default CSS
-                            $dialogContent.css('transition', '');
-                            $dialogContent.css('-webkit-transition', '');
-                            $dialogContent.css('-moz-transition', '');
-                            $dialogContent.css('-o-transition', '');
-
-                            // fade out the current content
+                            // everything else needs to fire after the new compile
                             $timeout(function() {
-                                $dialogContent.children().css('opacity', 0);
-                            }, transitionTimer);
-                            transitionTimer += opacityDuration + transitionWait;
+                                var newHeight = tempContent[0].clientHeight;
 
-                            // change the height of the dialog after the content is gone
-                            $timeout(function() {
-                                $dialogContent.empty();
+                                tempContent.remove();
+                                tempContent = null;
 
-                                // make sure the new content is added and is invisible
-                                $dialogContent.append(template);
-                                $dialogContent.children().css('opacity', 0);
-                            }, transitionTimer);
-                            transitionTimer += opacityDuration + transitionWait;
+                                // find the current height so we can allow smooth transitions
+                                var currentHeight = $dialogContent[0].clientHeight;
 
-                            // change the height of the dialog after the content is gone
-                            $timeout(function() {
-                                $dialogContent.css('height', newHeight + 'px');
-                            }, transitionTimer);
-                            transitionTimer += heightDuration + transitionWait;
+                                // disable the current transition properties so the height
+                                // change doesn't transition from 0 to current
+                                $dialogContent.css('transition', 'none');
+                                $dialogContent.css('-webkit-transition', 'none');
+                                $dialogContent.css('-moz-transition', 'none');
+                                $dialogContent.css('-o-transition', 'none');
 
-                            // make sure the new pane is compiled after it is loaded
-                            // and before it is visible to prevent popping
-                            $timeout(function () {
-                                privateMethods.applyAriaAttributes($dialog, options);
-                                $compile($dialog)(scope);
-                            }, transitionTimer);
-                            transitionTimer += opacityDuration + transitionWait;
+                                // assign the new height, then trigger a reflow to flush changes
+                                $dialogContent.css('height', currentHeight + 'px');
+                                $dialogContent[0].offsetHeight;
 
-                            // add the new content and fade it in
-                            $timeout(function() {
-                                $dialogContent.children().css('opacity', 1);
-                            }, transitionTimer);
+                                // restore the transitions to the default CSS
+                                $dialogContent.css('transition', '');
+                                $dialogContent.css('-webkit-transition', '');
+                                $dialogContent.css('-moz-transition', '');
+                                $dialogContent.css('-o-transition', '');
+
+                                // fade out the current content
+                                $timeout(function() {
+                                    $dialogContent.children().css('opacity', 0);
+                                }, transitionTimer);
+                                transitionTimer += opacityDuration + transitionWait;
+
+                                // change the height of the dialog after the content is gone
+                                $timeout(function() {
+                                    $dialogContent.empty();
+
+                                    // make sure the new content is added and is invisible
+                                    $dialogContent.append(template);
+                                    $dialogContent.children().css('opacity', 0);
+                                }, transitionTimer);
+                                transitionTimer += opacityDuration + transitionWait;
+
+                                // change the height of the dialog after the content is gone
+                                $timeout(function() {
+                                    $dialogContent.css('height', newHeight + 'px');
+                                }, transitionTimer);
+                                transitionTimer += heightDuration + transitionWait;
+
+                                // make sure the new pane is compiled after it is loaded
+                                // and before it is visible to prevent popping
+                                $timeout(function () {
+                                    privateMethods.applyAriaAttributes($dialog, options);
+                                    $compile($dialog)(scope);
+                                }, transitionTimer);
+                                transitionTimer += opacityDuration + transitionWait;
+
+                                // add the new content and fade it in
+                                $timeout(function() {
+                                    $dialogContent.children().css('opacity', 1);
+                                }, transitionTimer);
+                            });
                         });
                     },
 
