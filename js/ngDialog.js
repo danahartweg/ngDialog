@@ -460,10 +460,25 @@
                             tempContent.remove();
                             tempContent = null;
 
-                            // find and assign the current height so the transition
-                            // can take over smoothly
+                            // find the current height so we can allow smooth transitions
                             var currentHeight = $dialogContent[0].clientHeight;
+
+                            // disable the current transition properties so the height
+                            // change doesn't transition from 0 to current
+                            $dialogContent.css('transition', 'none');
+                            $dialogContent.css('-webkit-transition', 'none');
+                            $dialogContent.css('-moz-transition', 'none');
+                            $dialogContent.css('-o-transition', 'none');
+
+                            // assign the new height, then trigger a reflow to flush changes
                             $dialogContent.css('height', currentHeight + 'px');
+                            $dialogContent[0].offsetHeight;
+
+                            // restore the transitions to the default CSS
+                            $dialogContent.css('transition', '');
+                            $dialogContent.css('-webkit-transition', '');
+                            $dialogContent.css('-moz-transition', '');
+                            $dialogContent.css('-o-transition', '');
 
                             // fade out the current content
                             $timeout(function() {
