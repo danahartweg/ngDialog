@@ -526,7 +526,9 @@
                     },
 
                     loadTemplateUrl: function (tmpl, config) {
+                        $rootScope.$broadcast('ngDialog.templateLoading', tmpl);
                         return $http.get(tmpl, (config || {})).then(function(res) {
+                            $rootScope.$broadcast('ngDialog.templateLoaded', tmpl);
                             return res.data || '';
                         });
                     },
@@ -619,18 +621,21 @@
 
                             if (options.controller && (angular.isString(options.controller) || angular.isArray(options.controller) || angular.isFunction(options.controller))) {
 
-                                var ctrl = options.controller;
+                                var label;
+
                                 if (options.controllerAs && angular.isString(options.controllerAs)) {
-                                    ctrl += ' as ' + options.controllerAs;
+                                    label = options.controllerAs;
                                 }
 
-                                var controllerInstance = $controller(ctrl, angular.extend(
+                                var controllerInstance = $controller(options.controller, angular.extend(
                                     locals,
                                     {
                                         $scope: scope,
                                         $element: $dialog
-                                    }
-                                ));
+                                    }),
+                                    null,
+                                    label
+                                );
                                 $dialog.data('$ngDialogControllerController', controllerInstance);
                             }
 
@@ -844,6 +849,10 @@
                             var dialog = $all[i];
                             privateMethods.closeDialog($el(dialog), value);
                         }
+                    },
+
+                    getOpenDialogs: function() {
+                        return openIdStack;
                     },
 
                     getDefaults: function () {

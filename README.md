@@ -70,6 +70,28 @@ ngDialog.open({ template: 'templateId' });
 
 Also it is possible to use simple string as template together with ``plain`` option.
 
+##### Pro Tip about templates
+
+It's not always necessary to place your external html template inside ``<script>`` tag. You could put these templates into ``$templateCache`` like this:
+
+```javascript
+angular.module('dialog.templates').run([$templateCache, function($templateCache) {
+    $templateCache.put('templateId', 'template content');
+}]);
+```
+
+Then you it would be possible to include ``dialog.templates`` module into dependencies of your main module and start using this template as ``templateId``.
+
+There is no need to do these actions manually. 
+You could use one of the plugins specifically for these purposes. They are available for different build systems including most popular Gulp / Grunt:
+
+- [gulp-angular-templatecache](https://github.com/miickel/gulp-angular-templatecache)
+- [gulp-ng-html2js](https://www.npmjs.com/package/gulp-ng-html2js)
+- [grunt-html2js](https://github.com/karlgoldstein/grunt-html2js)
+- [grunt-html2js](https://www.npmjs.com/package/broccoli-html2js)
+
+You could find more detailed examples on each of these pages.
+
 ##### ``panes {Object}``
 
 Dialog panes can be loaded via the same sources as the ``template`` option. The template will always load in as the first pane. Subsequent panes should be set with their key as the pane identifier:
@@ -93,6 +115,17 @@ $scope.loadPane('paneIdentifier');
 ```
 
 The initial template can be loaded with the pane identifier of ``main``.
+
+##### ``plain {Boolean}``
+
+If ``true`` allows to use plain string as template, default ``false``:
+
+```javascript
+ngDialog.open({
+    template: '<p>my template</p>',
+    plain: true
+});
+```
 
 ##### ``controller {String} | {Array} | {Object}``
 
@@ -419,6 +452,12 @@ Method manages closing all active modals on the page. Takes an optional value to
 
 ===
 
+### ``.getOpenDialogs()``
+
+Method that returns array which includes ids of opened dialogs.
+
+===
+
 ### ``.setForceBodyReload({Boolean})``
 
 Adds additional listener on every ``$locationChangeSuccess`` event and gets update version of ``body`` into dialog. Maybe useful in some rare cases when you're dependant on DOM changes, defaults to ``false``. Use it in module's config as provider instance:
@@ -471,6 +510,14 @@ $rootScope.$on('ngDialog.opened', function (e, $dialog) {
 ```
 
 ``ngDialog.closing`` is different than ``ngDialog.closed`` in that it is fired immediately when the dialog begins closing, whereas ``ngDialog.closed`` is fired after all animations are complete. Both will be fired even when animation end support is not detected.
+
+Additionally we trigger following 2 events related to loading of template for dialog:
+
+- ``ngDialog.templateLoading``
+
+- ``ngDialog.templateLoaded``
+
+In case you are loading your templates from external location, you could use above events to show some kind of loader.
 
 ## Themes
 
