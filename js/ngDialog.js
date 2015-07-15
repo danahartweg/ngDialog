@@ -696,6 +696,7 @@
                                 }
 
                                 privateMethods.replacePane(paneTemplate);
+                                $rootScope.$broadcast('ngDialog.paneLoaded', $dialog, paneId);
                             };
 
                             $timeout(function () {
