@@ -405,7 +405,7 @@
                         return options[dialogID];
                     },
 
-                    replacePane: function(templateToLoad) {
+                    replacePane: function(templateToLoad, paneId) {
                         var $dialog = privateMethods.getActiveDialog();
                         var dialogChildren = $dialog.children();
                         var $dialogContent = null;
@@ -520,6 +520,8 @@
                                 // add the new content and fade it in
                                 $timeout(function() {
                                     $dialogContent.children().css('opacity', 1);
+
+                                    $rootScope.$broadcast('ngDialog.paneLoaded', $dialog, paneId);
                                 }, transitionTimer);
                             });
                         });
@@ -695,8 +697,7 @@
                                     return;
                                 }
 
-                                privateMethods.replacePane(paneTemplate);
-                                $rootScope.$broadcast('ngDialog.paneLoaded', $dialog, paneId);
+                                privateMethods.replacePane(paneTemplate, paneId);
                             };
 
                             $timeout(function () {
