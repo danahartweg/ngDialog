@@ -514,6 +514,10 @@
                                 $timeout(function () {
                                     privateMethods.applyAriaAttributes($dialog, options);
                                     $compile($dialog)(scope);
+
+                                    // also remove the height designation so the content
+                                    // height can flow as it's added
+                                    $dialogContent.css('height', '');
                                 }, transitionTimer);
                                 transitionTimer += opacityDuration + transitionWait;
 
