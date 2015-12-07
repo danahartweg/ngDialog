@@ -445,20 +445,20 @@
                             var transitionTimer = 0;
                             var transitionWait  = 25;
                             var opacityDuration = 250;
-                            var heightDuration = 400;
+                            var heightDuration  = 400;
 
                             // create a temporary element to find the new size
                             var tempContent = $dialogContent.clone();
                             tempContent.css('visibility', 'hidden');
                             tempContent.css('height', '');
-                            tempContent.empty()
+                            tempContent.empty();
                             tempContent.append(template);
-
-                            $dialog.append(tempContent);
 
                             // trigger a compile on the new template, so we can
                             // retrieve the actual height
-                            $compile($dialog)(scope);
+                            $compile(tempContent.contents())(scope);
+
+                            $dialog.append(tempContent);
 
                             // everything else needs to fire after the new compile
                             $timeout(function() {
@@ -514,6 +514,10 @@
                                 $timeout(function () {
                                     privateMethods.applyAriaAttributes($dialog, options);
                                     $compile($dialog)(scope);
+
+                                    // also remove the height designation so the content
+                                    // height can flow as it's added
+                                    $dialogContent.css('height', '');
                                 }, transitionTimer);
                                 transitionTimer += opacityDuration + transitionWait;
 
