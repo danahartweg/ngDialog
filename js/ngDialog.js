@@ -451,7 +451,11 @@
                             // freeze the dialog height so we don't get a
                             // 'flashing' scroll bar on smaller screens
                             $dialog.css('height', $dialog[0].clientHeight + 'px');
-                            $dialog.css('overflow', 'hidden');
+
+                            // if the element isn't currently overflowing, make sure it won't
+                            if ($dialog[0].scrollHeight <= $dialog[0].clientHeight) {
+                                $dialog.css('overflow', 'hidden');
+                            }
 
                             // create a temporary element to find the new size
                             var tempContent = $dialogContent.clone();
