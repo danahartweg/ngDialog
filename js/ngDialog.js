@@ -447,6 +447,12 @@
                             var opacityDuration = 250;
                             var heightDuration  = 400;
 
+                            // before we calculate the new height, we need to
+                            // freeze the dialog height so we don't get a
+                            // 'flashing' scroll bar on smaller screens
+                            $dialog.css('height', $dialog[0].clientHeight + 'px');
+                            $dialog.css('overflow', 'hidden');
+
                             // create a temporary element to find the new size
                             var tempContent = $dialogContent.clone();
                             tempContent.css('visibility', 'hidden');
@@ -466,6 +472,12 @@
 
                                 tempContent.remove();
                                 tempContent = null;
+
+                                // we can remove the specified height for the dialog
+                                // since we've removed the content and will no longer
+                                // see the flash
+                                $dialog.css('height', '');
+                                $dialog.css('overflow', '');
 
                                 // find the current height so we can allow smooth transitions
                                 var currentHeight = $dialogContent[0].clientHeight;
