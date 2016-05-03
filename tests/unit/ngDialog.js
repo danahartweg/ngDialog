@@ -1,4 +1,6 @@
 describe('ngDialog', function () {
+  'use strict';
+
   var any = jasmine.any,
       spy = jasmine.createSpy;
 
@@ -170,6 +172,21 @@ describe('ngDialog', function () {
     }));
   });
 
+  describe('with an appended class', function () {
+    var elm;
+    beforeEach(inject(function (ngDialog, $timeout, $document) {
+      var id = ngDialog.open({
+        appendClassName: 'ngdialog-custom'
+      }).id;
+      $timeout.flush();
+      elm = $document[0].getElementById(id);
+    }));
+
+    it('should have the additional class', inject(function () {
+      expect(elm.className.split(' ')).toContain('ngdialog-custom');
+    }));
+  });
+
   describe('controller instantiation', function () {
     var Ctrl;
     beforeEach(inject(function (ngDialog, $timeout, $q) {
@@ -236,4 +253,85 @@ describe('ngDialog', function () {
     }));
 
   });
+
+  describe('bindToController data checking', function () {
+    var Ctrl;
+    beforeEach(inject(function (ngDialog, $timeout) {
+      Ctrl = spy('DialogCtrl');
+      ngDialog.open({
+        controller: Ctrl,
+        controllerAs: 'CtrlVM',
+        bindToController: true,
+        data: {
+          testData: 'testData'
+        }
+      });
+      $timeout.flush();
+    }));
+
+    it('should have placed ngDialogId on the controller', function() {
+      expect(Ctrl.calls.first().object.ngDialogId).toEqual('ngdialog1');
+    });
+
+    it('should have placed ngDialogData on the controller', function() {
+      expect(Ctrl.calls.first().object.ngDialogData.testData).toEqual('testData');
+    });
+
+    it('should have placed closeThisDialog function on the controller', function() {
+      expect(Ctrl.calls.first().object.closeThisDialog).toEqual(jasmine.any(Function));
+    });
+
+  });
+
+  describe('openOnePerName', function () {
+      var dialogOptions = {
+          name: 'do something'
+      };
+
+      describe('when feature is off - default', function () {
+          var ngDialog;
+          var $timeout;
+
+          beforeEach(inject(function (_ngDialog_, _$timeout_) {
+              ngDialog = _ngDialog_;
+              $timeout = _$timeout_;
+          }));
+
+          it('should allow opening 2 dialogs with the same name', function () {
+              var firstDialog = ngDialog.open(dialogOptions);
+              expect(firstDialog).not.toBeUndefined();
+              expect(firstDialog.id).toBe('ngdialog1');
+
+              var secondDialog = ngDialog.open(dialogOptions);
+              expect(secondDialog).not.toBeUndefined();
+              expect(secondDialog.id).toBe('ngdialog2');
+              $timeout.flush();
+          });
+      });
+
+      describe('when feature is on (openOnePerName = true)', function () {
+          var ngDialog;
+          var $timeout;
+
+          beforeEach(module(function (ngDialogProvider) {
+              ngDialogProvider.setOpenOnePerName(true);
+          }));
+
+          beforeEach(inject(function (_ngDialog_, _$timeout_) {
+              ngDialog = _ngDialog_;
+              $timeout = _$timeout_;
+          }));
+
+          it('should allow opening 2 dialogs with the same name', function () {
+              var firstDialog = ngDialog.open(dialogOptions);
+              expect(firstDialog).not.toBeUndefined();
+              expect(firstDialog.id).toBe('do something dialog');
+              $timeout.flush();
+
+              var secondDialog = ngDialog.open(dialogOptions);
+              expect(secondDialog).toBeUndefined();
+          });
+      });
+  });
+
 });
